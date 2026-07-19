@@ -1,47 +1,73 @@
-# Data Exploration & Enrichment
+# Ethiopia Financial Inclusion Forecasting
 
-Enriches Selam Analytics' starter dataset (`data/raw/ethiopia_fi_unified_data.xlsx`) —
-43 records, 14 impact links — with independently-sourced data to strengthen the
-Access/Usage forecasting base.
+Forecasting Ethiopia's **Access** (Account Ownership) and **Usage** (Digital Payment
+Adoption) indicators — per the World Bank Global Findex framework — for Selam Analytics,
+a consortium of development finance institutions, mobile money operators, and the
+National Bank of Ethiopia.
 
-## Run
+Ethiopia is a useful/hard case: Telebirr alone has 54M+ registered users, yet Findex
+puts account ownership at only 49% (2024), up just 3pp since 2021. This project
+reconciles that gap and builds toward a 2025–2027 forecast.
+
+## Quickstart
+
+```bash
+python -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+jupyter notebook notebooks/eda.ipynb
+```
+
+## Data Enrichment
+
+`src/enrich_dataset.py` extends the starter dataset (`data/raw/`) with 12 observations,
+2 events, and 4 impact links — every one sourced from IMF FAS, World Bank/ESMAP,
+UNESCO, DataReportal, or NBE (no estimated figures). Output lands in `data/processed/`.
 
 ```bash
 python src/enrich_dataset.py
 ```
 
-Reads `data/raw/`, writes the enriched workbook + CSVs to `data/processed/`. Idempotent —
-re-running regenerates the same output from the same source additions defined in the
-script.
+Full citations, exact quotes, and confidence ratings for each addition: **`data_enrichment_log.md`**.
 
-## What was added
+**Why it matters:** the starter dataset had no enabling-infrastructure indicators
+(electricity, literacy) and no sector-wide "active account" figures — both turned out
+to be central to explaining the Access slowdown and the Usage registered-vs-active gap
+found in Task 2.
 
-|              | Count | Examples                                                                                                               |
-| ------------ | ----- | ---------------------------------------------------------------------------------------------------------------------- |
-| Observations | +12   | Bank/ATM density, electricity access, literacy, active-account share, gender & digital-skill gaps                      |
-| Events       | +2    | NBE Proclamation 1282/2023 (opened market to foreign providers); Directive NPS/10/2025 (interoperability mandate)      |
-| Impact links | +4    | Proclamation → M-Pesa entry; interoperability directive → P2P growth; existing NFIS-II event → new skill-gap indicator |
+## Exploratory Data Analysis
 
-**58 main records, 18 impact links total.** No original record was altered — additions
-only. Every figure traces to a primary source (IMF FAS, World Bank/ESMAP, UNESCO,
-DataReportal, NBE); nothing was estimated. Two candidates (an unsourced literacy
-estimate, a GSMA index score) were evaluated and **rejected** for lack of a citable
-source — see log for reasoning.
+`src/eda_analysis.py` generates all 11 charts (`reports/figures/`); `notebooks/eda.ipynb`
+carries the full narrative and is executed with outputs embedded.
 
-## Why these, specifically
+```bash
+python src/eda_analysis.py
+jupyter nbconvert --to notebook --execute --inplace notebooks/eda.ipynb
+```
 
-The starter dataset had no enabling-infrastructure indicators and no sector-wide
-"active account" figures. Both turned out load-bearing in Task 2: infrastructure
-(electricity, literacy) explains why Access growth stalled despite telecom launches,
-and the sector-wide active-account figure exposed a registered-vs-active gap that a
-single operator's self-reported number was masking.
+**Top findings:**
 
-## Reference
+1. Account ownership growth collapsed from +11pp (2017–21) to +3pp (2021–24) despite
+   Telebirr, Safaricom, and NFIS-II all launching in that window.
+2. Sector-wide, only ~15% of 139.5M registered mobile money accounts are active (NBE) —
+   vs. 66% self-reported by a single operator. Not the same metric; don't conflate them.
+3. The Access gender gap (18–20pp) is roughly double the Usage gender gap (10pp).
+4. 4G coverage nearly doubled in two years; electricity (55%) and literacy (~52%) didn't
+   — connectivity is no longer the binding constraint on Access.
+5. ~85% of indicators have only 1–2 observed years — this is a sparse-series problem,
+   not a trend-forecasting one. See `reports/interim_report.docx` for the full writeup.
 
-Full per-record citations, exact source quotes, and confidence ratings:
-**`data_enrichment_log.md`**. Schema/valid-values: `data/raw/reference_codes.xlsx`.
+## Repo layout
 
-## Output
+```
+data/raw/            starter datasets, unmodified
+data/processed/       enriched dataset
+src/                  enrichment + analysis code (idempotent, re-runnable)
+notebooks/            eda.ipynb
+reports/              interim_report.docx/.md, figures/
+```
 
-- `data/processed/ethiopia_fi_unified_data_enriched.xlsx` (+ `.csv`)
-- `data/processed/impact_links_enriched.csv`
+## Data quality caveats
+
+Read before modeling: three pillars (Quality, Trust, Depth) have zero coverage;
+"active user" is defined inconsistently across sources; adult literacy is a stale
+2017 figure. Full list in `reports/interim_report.docx` §4.
