@@ -1,2 +1,55 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+build/
+dist/
+.Python
+*.so
+
+# --- Virtual environments ---
 .venv/
+
+# --- Jupyter ---
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# --- Environment / secrets ---
+.env
+.env.*
+*.pem
+secrets.yaml
+config.local.yaml
+
+# --- OS cruft ---
+.DS_Store
+Thumbs.db
+
+# --- Editors ---
+.vscode/
+.idea/
+*.swp
+
+# --- Testing / coverage ---
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# --- Data (keep raw/processed data files out of git; track structure only) ---
+# Comment these out if you DO want the actual dataset files committed for this challenge.
 data/
+
+# --- Large model artifacts ---
+models/*.pkl
+models/*.joblib
+models/*.h5
+
+# --- Dashboard runtime ---
+.streamlit/
+
+# --- Logs ---
+*.log
