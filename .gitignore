@@ -53,3 +53,5 @@ models/*.h5
 
 # --- Logs ---
 *.log
+reports/*.csv
+reports/figures/*.png
