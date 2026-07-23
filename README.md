@@ -1,65 +1,272 @@
-# Forecasting Access and Usage, 2025–2027
+# 🇪🇹 Ethiopia Financial Inclusion Forecasting
 
-Forecasts Account Ownership (Access) and Digital Payment Usage (Usage) using a trend
-regression + Task 3's calibrated event-impact model, under three scenarios.
+Forecasting Ethiopia's financial inclusion progress (2025–2027) using time series analysis, event-impact modeling, and an interactive Streamlit dashboard. This project was completed as part of the 10 Academy Artificial Intelligence Mastery Program.
 
-## Run
+---
 
-```bash
-jupyter nbconvert --to notebook --execute --inplace notebooks/forecasting.ipynb
+# Business Problem
+
+Ethiopia is experiencing rapid growth in digital financial services through initiatives such as Telebirr, M-Pesa, and the National Financial Inclusion Strategy (NFIS-II). Despite this expansion, account ownership increased by only three percentage points between 2021 and 2024.
+
+Financial institutions, policymakers, and development partners need a data-driven system that can:
+
+- Understand the factors driving financial inclusion
+- Quantify the impact of policies, infrastructure, and product launches
+- Forecast future financial inclusion trends
+- Support evidence-based policy and investment decisions
+
+---
+
+# Overview
+
+This project develops an end-to-end financial inclusion forecasting system that:
+
+- Explores and enriches Ethiopia's financial inclusion dataset
+- Performs exploratory data analysis to identify trends and gaps
+- Models the effects of policy changes, infrastructure investments, and digital financial product launches
+- Forecasts financial inclusion indicators for 2025–2027
+- Presents findings through an interactive Streamlit dashboard
+
+The forecasting system combines trend regression with an event-impact model calibrated using Ethiopia-specific historical data.
+
+---
+
+# Features
+
+- Financial inclusion data enrichment
+- Exploratory data analysis (EDA)
+- Event-impact modeling
+- Scenario-based forecasting
+- Interactive Streamlit dashboard
+- Downloadable forecast datasets
+- Policy target tracking
+- Interactive visualizations
+
+---
+
+# Dashboard Pages
+
+### Overview
+
+- Financial inclusion KPI cards
+- Growth rate summaries
+- P2P vs ATM transaction comparison
+- Mobile money activity metrics
+
+### Trends
+
+- Interactive time-series visualization
+- Date range filtering
+- Event overlays
+- Channel comparison charts
+
+### Forecasts
+
+- Forecasts for 2025–2027
+- Trend-only vs event-adjusted models
+- Confidence intervals
+- Scenario analysis
+
+### Inclusion Projections
+
+- Progress toward financial inclusion targets
+- Scenario planning
+- Policy insights
+- Key recommendations
+
+---
+
+# Dataset
+
+The project uses a unified financial inclusion dataset containing:
+
+- Financial inclusion observations
+- Policy and market events
+- Event-indicator relationships
+- National policy targets
+
+### Data Sources
+
+- World Bank Global Findex
+- IMF Financial Access Survey
+- National Bank of Ethiopia
+- EthSwitch
+- Telebirr
+- Safaricom M-Pesa Ethiopia
+- GSMA
+- ITU
+- World Bank Open Data
+
+---
+
+# Methodology
+
+## 1. Data Enrichment
+
+Additional indicators were collected from official sources, including:
+
+- Mobile money adoption
+- Infrastructure indicators
+- Internet penetration
+- Electricity access
+- Literacy
+- Gender gap metrics
+
+---
+
+## 2. Exploratory Data Analysis
+
+Performed:
+
+- Trend analysis
+- Growth rate analysis
+- Infrastructure analysis
+- Correlation analysis
+- Data quality assessment
+- Event timeline analysis
+
+---
+
+## 3. Event Impact Modeling
+
+Built an event-indicator association model that estimates the influence of:
+
+- Policy reforms
+- Product launches
+- Infrastructure investments
+- Market liberalization
+
+Historical observations were used to calibrate event effects.
+
+---
+
+## 4. Forecasting
+
+Forecasts were generated for:
+
+- Account Ownership Rate (Access)
+- Digital Payment Usage (Usage)
+
+Three scenarios were evaluated:
+
+- Optimistic
+- Base
+- Pessimistic
+
+Forecast horizon:
+
+- 2025
+- 2026
+- 2027
+
+---
+
+# Technologies Used
+
+- Python
+- Pandas
+- NumPy
+- SciPy
+- Plotly
+- Streamlit
+- Scikit-learn
+- Git
+- Jupyter Notebook
+
+---
+
+# Project Structure
+
+```text
+ethiopia-fi-forecast/
+│
+├── dashboard/
+├── data/
+├── models/
+├── notebooks/
+├── reports/
+├── src/
+├── tests/
+├── requirements.txt
+├── README.md
+└── .gitignore
 ```
 
-`src/forecast_model.py` holds the reusable logic (trend fit, event-augmented
-adjustment, scenario construction); `notebooks/forecasting.ipynb` carries the
-narrative and ships pre-executed.
+---
 
-## Targets
+# Quick Start
 
-|                    | Indicator        | History           | Note                                                                            |
-| ------------------ | ---------------- | ----------------- | ------------------------------------------------------------------------------- |
-| Access             | `ACC_OWNERSHIP`  | 5 pts (2011–2024) | 2011 point added for this task                                                  |
-| Usage              | `USG_P2P_COUNT`  | 2 pts (2024–2025) | **entire series added for this task** — didn't exist in the dataset before      |
-| Usage (supporting) | `ACC_MM_ACCOUNT` | 2 pts             | has direct `impact_link`s, used as a cross-check since the true target has none |
+## Clone the repository
 
-## Method
+```bash
+git clone https://github.com/RahemetGisho/ethiopia-fi-forecast.git
+cd ethiopia-fi-forecast
+```
 
-**Trend:** OLS on year → value, small-sample t-distribution prediction interval (not a
-normal approximation) — honest given `dof` is as low as 1 for the 3-point Usage series.
-No logistic/saturating curve was fit — an extra curvature parameter would fit noise
-with this few points, not signal.
+## Create a virtual environment
 
-**Event-augmented adjustment:** the _incremental_ calibrated event effect still to land
-after the last observation (continued ramp-up of pending events + anything dated after
-Nov 2024), added on top of the trend — not the full event effect, to avoid
-double-counting what the trend line already reflects.
+### Windows
 
-**Scenarios:**
-| | Trend component | Event component |
-|---|---|---|
-| Pessimistic | lower 95% bound | none |
-| Base | point forecast | calibrated (Task 3 factors) |
-| Optimistic | upper 95% bound | raw/uncalibrated |
+```bash
+python -m venv .venv
+.venv\Scripts\activate
+```
 
-## Results (2027, base scenario)
+### Linux / macOS
 
-| Target | 2027 forecast | vs. NFIS-II target                   | Scenario range                                      |
-| ------ | ------------- | ------------------------------------ | --------------------------------------------------- |
-| Access | ~62%          | Falls short of the 70% (2025) target | ~48–80%                                             |
-| Usage  | ~43%          | —                                    | Trend CI alone spans roughly −50% to +140%, clipped |
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+```
 
-## The honest headline
+## Install dependencies
 
-**`USG_P2P_COUNT` — the brief's actual Usage target — has zero direct
-`impact_link` records in the dataset.** The event-augmented model contributes nothing
-to its forecast; only the 3-point trend line is doing any work. This is stated
-explicitly in the notebook rather than papered over with the `ACC_MM_ACCOUNT` proxy,
-which is carried alongside it precisely because it _does_ have event linkage.
+```bash
+pip install -r requirements.txt
+```
 
-## Key uncertainties
+## Run the dashboard
 
-1. No event linkage at all for the primary Usage target.
-2. The 2024 Usage anchor (35%) is itself disputed by independent analysis suggesting
-   the true figure may be closer to ~21% — see `data_enrichment_log.md`.
-3. Small-N trend fits (3–5 points) can't distinguish real deceleration from noise.
-4. GENDER/AFFORDABILITY calibration factors feeding this indirectly were never
-   independently validated (Task 3).
+```bash
+streamlit run dashboard/app.py
+```
+
+---
+
+# Results
+
+The project provides:
+
+- Financial inclusion trend analysis
+- Event impact estimates
+- Scenario-based forecasts for 2025–2027
+- Interactive policy dashboard
+- Downloadable forecast tables
+- Evidence-based policy insights
+
+---
+
+# Future Improvements
+
+- Incorporate quarterly financial inclusion data
+- Integrate macroeconomic indicators
+- Explore advanced forecasting models (Prophet, LSTM)
+- Automate data updates from official APIs
+- Improve uncertainty estimation
+- Add regional-level forecasting
+
+---
+
+# Author
+
+**Rahemet Hussen**
+
+- LinkedIn: https://www.linkedin.com/in/rahemethussen/
+- GitHub: https://github.com/RahemetGisho
+- Email: gishorahemeth@gmail.com
+
+---
+
+# License
+
+This project was developed for educational purposes as part of the **10 Academy Artificial Intelligence Mastery Program**.
