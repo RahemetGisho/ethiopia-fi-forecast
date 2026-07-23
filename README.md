@@ -1,47 +1,65 @@
-# Event Impact Modeling
+# Forecasting Access and Usage, 2025–2027
 
-Turns the dataset's 18 `impact_link` records into a quantitative model of how events
-move Access/Usage indicators, validates it against real history, and calibrates it.
+Forecasts Account Ownership (Access) and Digital Payment Usage (Usage) using a trend
+regression + Task 3's calibrated event-impact model, under three scenarios.
 
 ## Run
 
 ```bash
-python -c "import sys; sys.path.insert(0,'src'); import impact_model as im; im.load_data()"  # sanity check
-jupyter nbconvert --to notebook --execute --inplace notebooks/impact_modeling.ipynb
+jupyter nbconvert --to notebook --execute --inplace notebooks/forecasting.ipynb
 ```
 
-`src/impact_model.py` holds the reusable logic (ramp function, association matrix,
-validation); `notebooks/impact_modeling.ipynb` carries the narrative and ships
-pre-executed.
+`src/forecast_model.py` holds the reusable logic (trend fit, event-augmented
+adjustment, scenario construction); `notebooks/forecasting.ipynb` carries the
+narrative and ships pre-executed.
+
+## Targets
+
+|                    | Indicator        | History           | Note                                                                            |
+| ------------------ | ---------------- | ----------------- | ------------------------------------------------------------------------------- |
+| Access             | `ACC_OWNERSHIP`  | 5 pts (2011–2024) | 2011 point added for this task                                                  |
+| Usage              | `USG_P2P_COUNT`  | 2 pts (2024–2025) | **entire series added for this task** — didn't exist in the dataset before      |
+| Usage (supporting) | `ACC_MM_ACCOUNT` | 2 pts             | has direct `impact_link`s, used as a cross-check since the true target has none |
 
 ## Method
 
-Each event's effect ramps up along a **logistic curve** reaching ~95% of its full size
-by `lag_months` after the event (not instant, not a single jump). Multiple events
-affecting the same indicator are **summed**. `impact_estimate` is read as percentage
-points for rate-type indicators and as % relative change for count-type indicators.
-Where `impact_estimate` is missing, a magnitude-band fallback (low=3/medium=8/high=15)
-is used.
+**Trend:** OLS on year → value, small-sample t-distribution prediction interval (not a
+normal approximation) — honest given `dof` is as low as 1 for the 3-point Usage series.
+No logistic/saturating curve was fit — an extra curvature parameter would fit noise
+with this few points, not signal.
 
-## The headline finding
+**Event-augmented adjustment:** the _incremental_ calibrated event effect still to land
+after the last observation (continued ramp-up of pending events + anything dated after
+Nov 2024), added on top of the trend — not the full event effect, to avoid
+double-counting what the trend line already reflects.
 
-The task brief asks directly: does the model's predicted impact match what actually
-happened after Telebirr's 2021 launch? **No — badly, and in an informative way:**
+**Scenarios:**
+| | Trend component | Event component |
+|---|---|---|
+| Pessimistic | lower 95% bound | none |
+| Base | point forecast | calibrated (Task 3 factors) |
+| Optimistic | upper 95% bound | raw/uncalibrated |
 
-| Indicator              | Predicted (raw, literature-based) | Actual (2021→2024) | Calibration factor |
-| ---------------------- | --------------------------------- | ------------------ | ------------------ |
-| ACC_OWNERSHIP (Access) | +18.8pp                           | +3.0pp             | **×0.16**          |
-| ACC_MM_ACCOUNT (Usage) | +10.0pp                           | +4.75pp            | **×0.48**          |
+## Results (2027, base scenario)
 
-The raw model — built on comparable-country evidence (mostly Kenya's M-Pesa
-experience) — overpredicts Access growth ~6x and Usage growth ~2x. This isn't a bug;
-it's the quantitative version of Task 2's "2021–2024 slowdown" finding: Kenya's
-Access playbook doesn't transfer 1:1 to Ethiopia, which lacked Kenya's electrification
-and literacy levels when its own mobile money boom started.
+| Target | 2027 forecast | vs. NFIS-II target                   | Scenario range                                      |
+| ------ | ------------- | ------------------------------------ | --------------------------------------------------- |
+| Access | ~62%          | Falls short of the 70% (2025) target | ~48–80%                                             |
+| Usage  | ~43%          | —                                    | Trend CI alone spans roughly −50% to +140%, clipped |
 
-## Outputs
+## The honest headline
 
-- `reports/association_matrix_raw.csv` / `_calibrated.csv` — event × indicator matrices
-- `reports/figures/12–16_*.png` — ramp function, both matrices, both validation charts
-- Calibration factors by pillar (Access ×0.16, Usage ×0.48, Gender ×0.5 _unvalidated_,
-  Affordability ×1.0) — full reasoning and confidence level for each in the notebook §6
+**`USG_P2P_COUNT` — the brief's actual Usage target — has zero direct
+`impact_link` records in the dataset.** The event-augmented model contributes nothing
+to its forecast; only the 3-point trend line is doing any work. This is stated
+explicitly in the notebook rather than papered over with the `ACC_MM_ACCOUNT` proxy,
+which is carried alongside it precisely because it _does_ have event linkage.
+
+## Key uncertainties
+
+1. No event linkage at all for the primary Usage target.
+2. The 2024 Usage anchor (35%) is itself disputed by independent analysis suggesting
+   the true figure may be closer to ~21% — see `data_enrichment_log.md`.
+3. Small-N trend fits (3–5 points) can't distinguish real deceleration from noise.
+4. GENDER/AFFORDABILITY calibration factors feeding this indirectly were never
+   independently validated (Task 3).
